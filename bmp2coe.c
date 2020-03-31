@@ -24,11 +24,11 @@ int BMPtoCOE(char *BMPfilename, int isfinished)
     BITMAPINFOHEADER head;
     fread(&head, sizeof(BITMAPINFOHEADER), 1, fp);
     int picwidth = head.biWidth, picheight = head.biHeight;
-    short ind;
+    short ind=head.biBitCount;
     fseek(fp, 0L, 0);
     fread(bm, 2, 1, fp);
-    fseek(fp, 0x1CL, 0);
-    fread(&ind, 2, 1, fp);
+    //fseek(fp, 0x1CL, 0);
+    //fread(&ind, 2, 1, fp);
     if (bm[0] != 'B' || bm[1] != 'M' )//|| ind != 32
     {
         printf("this is not a bmp\n");
@@ -41,7 +41,7 @@ int BMPtoCOE(char *BMPfilename, int isfinished)
     int buf = (picwidth * 3 % 4) ? 4 - (picwidth * 3) % 4 : 0;
     char *tmp = (char *)malloc(sizeof(char) * buf);
     int i, j;
-    unsigned char r, g, b;//, t for use in 32 bit
+    unsigned char r, g, b, t ;
     for (i = 0; i < picheight; i++)
         for (j = 0; j < picwidth; j++)
         {
@@ -69,7 +69,7 @@ int BMPtoCOE(char *BMPfilename, int isfinished)
             else
                 fprintf(outfp, ",");
            I'm using it in verilog so I don't need , and ;*/
-            //fread(&t, 1, 1, fp);
+            if(ind==32) fread(&t, 1, 1, fp);//take out transparency character in 32 bit bmp
         }
     free(tmp);
     fclose(fp);
