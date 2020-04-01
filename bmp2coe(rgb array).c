@@ -10,7 +10,7 @@
 #include<string.h>
 FILE *outfp;
 
-int BMPtoCOE(char *BMPfilename, int isfinished)
+int BMPtoCOE(char *BMPfilename, int isfinished, int single_color_flag)
 {   int carry2;
     FILE *fp;
     if ((fp = fopen(BMPfilename, "rb")) == NULL)
@@ -47,7 +47,7 @@ int BMPtoCOE(char *BMPfilename, int isfinished)
             fread(&b, 1, 1, fp);
             fread(&g, 1, 1, fp);
             fread(&r, 1, 1, fp);
-
+        if(single_color_flag==0){
             //seperate to 4 cases and ensure that the output are always 4 bit in hexadecimal i.e. add zeros in front
             if ((int)(r / 256.0 * 32)*32*64+ (int)(g / 256.0 * 64)*32+ (int)(b / 256.0 * 32)>=4096)
             fprintf(outfp, "%x", (int)(r / 256.0 * 32)*32*64+ (int)(g / 256.0 * 64)*32+ (int)(b / 256.0 * 32)); 
@@ -56,8 +56,10 @@ int BMPtoCOE(char *BMPfilename, int isfinished)
             else if((int)(r / 256.0 * 32)*32*64+ (int)(g / 256.0 * 64)*32+ (int)(b / 256.0 * 32)>=16)
             fprintf(outfp, "00%x", (int)(r / 256.0 * 32)*32*64+ (int)(g / 256.0 * 64)*32+ (int)(b / 256.0 * 32));
             else fprintf(outfp, "000%x", (int)(r / 256.0 * 32)*32*64+ (int)(g / 256.0 * 64)*32+ (int)(b / 256.0 * 32));
-
-
+        }
+        else {
+            fprintf(outfp, "%d",((int)r+(int)g+(int)b)>0);//when the color is not black, display white
+        }
             carry2++;
             if (carry2 == 16)
                 fprintf(outfp, "\n"), carry2 = 0;
@@ -78,6 +80,8 @@ int main()
 {   
     char s[20];
     char sout[20];
+    char bw[4];
+    int bwflag=1;
     //allows only 20 characters in the string, so pls adjust it accordingly
     printf("please enter the path of bmp picture\n");
     scanf("%s",s);
@@ -86,8 +90,12 @@ int main()
     scanf("%s",sout);
     outfp = fopen(sout, "w");
     
+    printf("only black and white?(yes/no)\n");
+    scanf("%s",bw);
+    bwflag=!strcmp(bw,"yes");//bwflag is 1 means true
+
     // fprintf(outfp, "memory_initialization_radix=16;\nmemory_initialization_vector =\n");
-    BMPtoCOE(s, 1);
+    BMPtoCOE(s, 1,bwflag);
     system("pause");
     return 0;
 }
